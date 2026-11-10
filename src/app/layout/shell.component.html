@@ -1,0 +1,45 @@
+<a class="skip" href="#main">Saltar al contenido</a>
+<div class="shell">
+  <header class="topbar">
+    <app-brand />
+    <button type="button" class="btn btn-ghost" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()" aria-controls="sidenav">
+      <app-icon [name]="menuOpen() ? 'close' : 'menu'" [size]="22" />
+      <span class="sr-only">Menú</span>
+    </button>
+  </header>
+
+  <aside id="sidenav" class="side" [class.open]="menuOpen()" aria-label="Navegación principal">
+    <div class="side-brand"><app-brand /></div>
+    <nav>
+      <ul>
+        @for (item of nav; track item.path) {
+          <li>
+            <a [routerLink]="item.path" routerLinkActive="active" ariaCurrentWhenActive="page">
+              <app-icon [name]="item.icon" [size]="19" />
+              <span>{{ item.label }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+    <a routerLink="/journal/new" class="btn btn-primary write"><app-icon name="pen" [size]="17" /> Escribir ahora</a>
+    <div class="foot">
+      <app-realtime-status />
+      <div class="who">
+        <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+        <div class="who-text">
+          <strong>{{ auth.user()?.name || 'Tu cuaderno' }}</strong>
+          <span class="faint">{{ auth.user()?.email }}</span>
+        </div>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm out" (click)="logout()" [disabled]="signingOut()">
+        <app-icon name="logout" [size]="16" /> {{ signingOut() ? 'Cerrando sesión' : 'Cerrar sesión' }}
+      </button>
+    </div>
+  </aside>
+  @if (menuOpen()) { <div class="scrim" (click)="menuOpen.set(false)" aria-hidden="true"></div> }
+
+  <main id="main" class="main" tabindex="-1">
+    <router-outlet />
+  </main>
+</div>

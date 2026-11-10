@@ -1,0 +1,4 @@
+.full { width: 100%; min-height: 48px; margin-top: 4px; }
+.switch { text-align: center; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 480px) { .two { grid-template-columns: 1fr; } }

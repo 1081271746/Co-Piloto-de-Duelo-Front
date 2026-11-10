@@ -1,0 +1,13 @@
+:host { display: block; }
+.back { margin: 0 0 18px -12px; }
+.sheet { padding: 36px 40px; display: flex; flex-direction: column; gap: 24px; border-top: 3px solid var(--heather); }
+.head { align-items: flex-start; }
+.date { font-size: 1.6rem; }
+.meta { border-top: 1px solid var(--line-soft); padding-top: 14px; }
+.actions { margin: 22px 0; }
+.danger { color: var(--risk); }
+.confirm { border-color: #e6c7c0; display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+.alist { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.arow { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 18px; }
+section.stack { margin-top: 32px; }
+@media (max-width: 640px) { .sheet { padding: 22px; } }

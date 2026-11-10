@@ -1,0 +1,74 @@
+<div class="page page-narrow">
+  <a routerLink="/journal" class="btn btn-ghost back"><app-icon name="left" [size]="16" /> Todas las entradas</a>
+
+  @if (loading()) {
+    <app-loading [rows]="2" label="Cargando la entrada" />
+  } @else if (error()) {
+    <app-error [message]="error()" (retry)="load()" />
+  } @else if (entry(); as e) {
+    @if (justSaved) {
+      <div class="alert alert-success" role="status" style="margin-bottom: 20px"><app-icon name="check" /><p>Tu entrada quedó guardada.</p></div>
+    }
+    <article class="sheet card">
+      <header class="row-between head">
+        <div class="stack" style="gap: 4px">
+          <p class="eyebrow">{{ e.recorded_at | esDate: 'weekday' }}</p>
+          <h1 class="date">{{ e.recorded_at | esDate: 'long' }}</h1>
+        </div>
+        <span class="chip chip-heather">{{ e.emotional_state }}</span>
+      </header>
+      <p class="prose-entry">{{ e.content }}</p>
+      <footer class="faint meta">
+        Escrita el {{ e.created_at | esDate: 'time' }}
+        @if (e.updated_at !== e.created_at) { · editada el {{ e.updated_at | esDate: 'time' }} }
+      </footer>
+    </article>
+
+    <div class="row actions">
+      <a [routerLink]="['/journal', e.id, 'edit']" class="btn btn-secondary"><app-icon name="pen" [size]="16" /> Editar</a>
+      <button type="button" class="btn btn-primary" (click)="analyze()" [disabled]="analyzing()">
+        <app-icon name="lens" [size]="16" /> {{ analyzing() ? 'Analizando, puede tardar unos segundos' : 'Pedir una lectura reflexiva' }}
+      </button>
+      <button type="button" class="btn btn-ghost danger" (click)="confirmDelete.set(true)" [disabled]="confirmDelete()"><app-icon name="trash" [size]="16" /> Eliminar</button>
+    </div>
+
+    @if (analyzeError()) {
+      <div class="alert alert-warn" role="alert"><app-icon name="info" /><p>{{ analyzeError() }}</p></div>
+    }
+
+    @if (confirmDelete()) {
+      <section class="card confirm" role="alertdialog" aria-labelledby="del-title" aria-describedby="del-desc">
+        <h2 id="del-title">¿Eliminar esta entrada?</h2>
+        <p id="del-desc" class="muted">La entrada y sus lecturas reflexivas se borrarán de forma permanente. Por seguridad, se conserva un registro mínimo de alertas y de actividad, sin el texto de la entrada.</p>
+        @if (deleteError()) { <div class="alert alert-error" role="alert"><app-icon name="alert" /><p>{{ deleteError() }}</p></div> }
+        <div class="row">
+          <button type="button" class="btn btn-danger" (click)="remove()" [disabled]="deleting()">{{ deleting() ? 'Eliminando' : 'Sí, eliminar' }}</button>
+          <button type="button" class="btn btn-secondary" (click)="confirmDelete.set(false)" [disabled]="deleting()">Conservarla</button>
+        </div>
+      </section>
+    }
+
+    <section class="stack">
+      <h2>Lecturas de esta entrada</h2>
+      @if (analysesError()) {
+        <p class="faint" role="alert">{{ analysesError() }}</p>
+      } @else if (!analyses().length) {
+        <p class="muted">Aún no has pedido una lectura. Es opcional: tu entrada tiene valor por sí misma.</p>
+      } @else {
+        <ul class="alist">
+          @for (a of analyses(); track a.id) {
+            <li>
+              <a class="card card-link arow" [routerLink]="['/analysis', a.id]">
+                <span>{{ a.created_at | esDate: 'time' }}</span>
+                <span class="row">
+                  @if (!isCurrent(a)) { <span class="chip chip-ember">Versión anterior</span> }
+                  <span class="chip">{{ a.result.risk_level | risk }}</span>
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

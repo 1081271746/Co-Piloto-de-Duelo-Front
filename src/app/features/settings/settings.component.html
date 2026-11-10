@@ -1,0 +1,53 @@
+<div class="page page-narrow">
+  <app-page-header eyebrow="Mi cuenta" title="Tus datos" lead="Tu país se usa para mostrarte contactos de ayuda cercanos." />
+
+  @if (loading()) {
+    <app-loading [rows]="2" label="Cargando tus datos" />
+  } @else if (loadError()) {
+    <app-error [message]="loadError()" (retry)="load()" />
+  } @else {
+    <div class="stack-lg">
+      <form class="card stack" [formGroup]="profile" (ngSubmit)="saveProfile()" novalidate aria-labelledby="p-title">
+        <h2 id="p-title">Perfil</h2>
+        @if (auth.user(); as u) { <p class="faint">{{ u.email }} · cuenta creada el {{ u.created_at | esDate: 'long' }}</p> }
+        <div class="field">
+          <label for="name">Nombre</label>
+          <input id="name" class="input" formControlName="name" autocomplete="name" [class.invalid]="invalid(profile.controls.name)" [attr.aria-invalid]="invalid(profile.controls.name)" aria-describedby="name-err" />
+          @if (invalid(profile.controls.name)) { <span id="name-err" class="field-error">Escribe un nombre (máximo 100 caracteres).</span> }
+        </div>
+        <div class="field">
+          <label for="country">País</label>
+          <select id="country" class="select input" formControlName="country" [attr.aria-invalid]="invalid(profile.controls.country)">
+            <option value="" disabled>Elige tu país</option>
+            @for (c of countries; track c.code) { <option [value]="c.code">{{ c.name }}</option> }
+            @if (profile.controls.country.value && !hasCountry(profile.controls.country.value)) {
+              <option [value]="profile.controls.country.value">{{ profile.controls.country.value }}</option>
+            }
+          </select>
+        </div>
+        @if (profileMsg(); as m) {
+          <div class="alert" [class.alert-success]="m.ok" [class.alert-error]="!m.ok" [attr.role]="m.ok ? 'status' : 'alert'"><app-icon [name]="m.ok ? 'check' : 'alert'" /><p>{{ m.text }}</p></div>
+        }
+        <div><button type="submit" class="btn btn-primary" [disabled]="savingProfile() || profile.pristine">{{ savingProfile() ? 'Guardando' : 'Guardar cambios' }}</button></div>
+      </form>
+
+      <form class="card stack" [formGroup]="password" (ngSubmit)="changePassword()" novalidate aria-labelledby="pw-title">
+        <h2 id="pw-title">Cambiar contraseña</h2>
+        <p class="faint">Al cambiarla se cerrará tu sesión y tendrás que entrar de nuevo.</p>
+        <div class="field">
+          <label for="cur">Contraseña actual</label>
+          <input id="cur" class="input" type="password" autocomplete="current-password" formControlName="current_password" [class.invalid]="invalid(password.controls.current_password)" [attr.aria-invalid]="invalid(password.controls.current_password)" aria-describedby="cur-err" />
+          @if (invalid(password.controls.current_password)) { <span id="cur-err" class="field-error">Escribe tu contraseña actual.</span> }
+        </div>
+        <div class="field">
+          <label for="new">Nueva contraseña</label>
+          <input id="new" class="input" type="password" autocomplete="new-password" formControlName="new_password" [class.invalid]="invalid(password.controls.new_password)" [attr.aria-invalid]="invalid(password.controls.new_password)" aria-describedby="new-hint" />
+          <span id="new-hint" [class.field-error]="invalid(password.controls.new_password)" [class.hint]="!invalid(password.controls.new_password)">Entre 12 y 128 caracteres.</span>
+          @if (password.hasError('same') && password.controls.new_password.touched) { <span class="field-error">La nueva contraseña debe ser distinta de la actual.</span> }
+        </div>
+        @if (passwordError()) { <div class="alert alert-error" role="alert"><app-icon name="alert" /><p>{{ passwordError() }}</p></div> }
+        <div><button type="submit" class="btn btn-secondary" [disabled]="savingPassword()">{{ savingPassword() ? 'Cambiando' : 'Cambiar contraseña' }}</button></div>
+      </form>
+    </div>
+  }
+</div>

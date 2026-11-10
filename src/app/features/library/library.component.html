@@ -1,0 +1,74 @@
+<div class="page">
+  <app-page-header eyebrow="Biblioteca" title="Prácticas y lecturas" lead="Recursos para cuando quieras acompañar lo que sientes. Úsalos a tu ritmo, sin metas ni orden obligatorio.">
+    <a routerLink="/library/history" class="btn btn-secondary"><app-icon name="history" [size]="16" /> Lo que he practicado</a>
+  </app-page-header>
+
+  @if (guidance(); as g) {
+    <div style="margin-bottom: 24px"><app-safety-guidance [guidance]="g" heading="Ahora mismo, lo primero es tu seguridad" /></div>
+  }
+
+  <div class="row-between controls">
+    <div class="tabs" role="tablist" aria-label="Tipo de contenido">
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'exercises'" (click)="setTab('exercises')">Ejercicios</button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'resources'" (click)="setTab('resources')">Recursos</button>
+    </div>
+    <div class="field filter">
+      <label for="cat" class="sr-only">Filtrar por tema</label>
+      <select id="cat" class="select" [ngModel]="category()" (ngModelChange)="setCategory($event)">
+        <option value="">Todos los temas</option>
+        @for (c of categories; track c) { <option [value]="c">{{ c | category }}</option> }
+      </select>
+    </div>
+  </div>
+
+  <div role="tabpanel">
+    @if (loading()) {
+      <app-loading [rows]="3" label="Cargando biblioteca" />
+    } @else if (error()) {
+      <app-error [message]="error()" (retry)="load()" />
+    } @else if (tab() === 'exercises') {
+      @if (!exercises().length) {
+        <app-empty-state title="No hay ejercicios aquí" text="Prueba con otro tema o vuelve a la lista completa." />
+      } @else {
+        <ul class="grid-auto list">
+          @for (ex of exercises(); track ex.id) {
+            <li>
+              <a class="card card-link ex" [routerLink]="['/library/exercises', ex.id]">
+                <div class="row-between"><span class="chip chip-sage">{{ ex.category | category }}</span><span class="faint"><app-icon name="clock" [size]="14" /> {{ ex.duration_minutes }} min</span></div>
+                <h3>{{ ex.title }}</h3>
+                <p class="muted clamp-3">{{ ex.description }}</p>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      @if (!resources().length) {
+        <app-empty-state title="No hay recursos aquí" text="Prueba con otro tema o vuelve a la lista completa." />
+      } @else {
+        <ul class="rlist">
+          @for (r of resources(); track r.id) {
+            <li class="card res">
+              <details>
+                <summary>
+                  <span class="stack" style="gap: 4px">
+                    <strong class="rtitle">{{ r.title }}</strong>
+                    <span class="row"><span class="chip chip-sage">{{ r.category | category }}</span>@if (r.country) { <span class="faint">{{ r.country }}</span> }</span>
+                  </span>
+                  <app-icon name="right" class="caret" />
+                </summary>
+                <div class="rbody stack">
+                  <p>{{ r.description }}</p>
+                  @if (safeUrl(r.url)) {
+                    <a [href]="r.url" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="align-self: flex-start">Abrir recurso externo <app-icon name="external" [size]="14" /></a>
+                  }
+                </div>
+              </details>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </div>
+  <app-pagination [page]="page()" [hasNext]="hasNext()" [disabled]="loading()" (pageChange)="go($event)" />
+</div>

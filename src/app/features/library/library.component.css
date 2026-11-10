@@ -1,0 +1,13 @@
+.controls { margin-bottom: 22px; }
+.filter { min-width: 220px; }
+.list, .rlist { list-style: none; padding: 0; margin: 0; }
+.rlist { display: flex; flex-direction: column; gap: 12px; }
+.ex { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.ex .faint { display: inline-flex; align-items: center; gap: 4px; }
+.res { padding: 0; }
+summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 22px; }
+summary::-webkit-details-marker { display: none; }
+.rtitle { font-family: var(--font-display); font-size: 1.1rem; font-weight: 500; }
+.caret { transition: transform .15s; color: var(--ink-faint); }
+details[open] .caret { transform: rotate(90deg); }
+.rbody { padding: 0 22px 20px; border-top: 1px solid var(--line-soft); padding-top: 16px; }

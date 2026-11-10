@@ -1,0 +1,87 @@
+<div class="page">
+  <app-page-header eyebrow="Seguimiento" title="Lo que has ido registrando" lead="Una descripción de tu actividad. El duelo no es lineal y estas cifras no miden recuperación.">
+    <div class="tabs" role="group" aria-label="Periodo">
+      @for (p of periods; track p) {
+        <button type="button" [attr.aria-selected]="days() === p" [attr.aria-pressed]="days() === p" (click)="setDays(p)">{{ p }} días</button>
+      }
+    </div>
+  </app-page-header>
+
+  @if (loading() && !summary()) {
+    <app-loading [rows]="3" label="Cargando seguimiento" />
+  } @else if (error()) {
+    <app-error [message]="error()" (retry)="load()" />
+  } @else if (summary(); as s) {
+    <div class="stack-lg" [attr.aria-busy]="loading()">
+      <dl class="counts">
+        <div class="card"><dt>Entradas</dt><dd>{{ s.counts.entries }}</dd></div>
+        <div class="card"><dt>Lecturas</dt><dd>{{ s.counts.analyses }}</dd></div>
+        <div class="card"><dt>Ejercicios</dt><dd>{{ s.counts.completed_exercises }}</dd></div>
+        <div class="card"><dt>Avisos de seguridad</dt><dd>{{ s.counts.alerts }}</dd></div>
+      </dl>
+      <p class="faint">Desde el {{ s.since | esDate: 'long' }}.</p>
+
+      @if (isEmpty()) {
+        <app-empty-state title="Aún no hay nada que mostrar en este periodo" text="Cuando escribas, aquí verás qué días lo hiciste y con qué palabras nombraste lo que sentías. Sin prisa.">
+          <a routerLink="/journal/new" class="btn btn-secondary">Escribir una entrada</a>
+        </app-empty-state>
+      } @else {
+        @if (trends(); as t) {
+          @if (t.daily_states.length) {
+            <section class="card">
+              <h2 class="h">Días con entradas</h2>
+              <app-daily-chart [rows]="t.daily_states" />
+            </section>
+          }
+        }
+        <div class="grid-2">
+          <section class="card">
+            <h2 class="h">Cómo nombraste lo que sentías</h2>
+            @if (states().length) { <app-bar-list [items]="states()" caption="Estados emocionales registrados" /> }
+            @else { <p class="muted">Sin estados en este periodo.</p> }
+          </section>
+          <section class="card">
+            <h2 class="h">En tus lecturas</h2>
+            @if (trends(); as t) {
+              <p class="faint">Basado en {{ t.analyses_considered }} {{ t.analyses_considered === 1 ? 'lectura' : 'lecturas' }}{{ t.truncated ? ' (se consideraron solo las más recientes)' : '' }}.</p>
+            }
+            @if (emotions().length) {
+              <p class="label sub">Emociones</p>
+              <app-bar-list [items]="emotions()" caption="Emociones en lecturas" />
+            }
+            @if (categories().length) {
+              <p class="label sub">Referencias de duelo</p>
+              <app-bar-list [items]="categories()" caption="Categorías en lecturas" color="var(--sage)" />
+            }
+            @if (!emotions().length && !categories().length) { <p class="muted">No hay lecturas en este periodo.</p> }
+          </section>
+        </div>
+      }
+      <p class="disclaimer">{{ s.disclaimer }}</p>
+    </div>
+  }
+
+  <section class="stack timeline">
+    <h2>Actividad reciente</h2>
+    @if (eventsLoading() && !events().length) {
+      <app-loading [rows]="2" label="Cargando actividad" />
+    } @else if (eventsError()) {
+      <app-error [message]="eventsError()" (retry)="loadEvents()" />
+    } @else if (!events().length) {
+      <p class="muted">Todavía no hay actividad registrada.</p>
+    } @else {
+      <ol class="events">
+        @for (e of events(); track e.type + e.id) {
+          <li>
+            <span class="dot" [attr.data-type]="e.type" aria-hidden="true"></span>
+            <div class="ev">
+              @if (link(e); as l) { <a [routerLink]="l">{{ eventLabels[e.type] }}</a> } @else { <span>{{ eventLabels[e.type] }}</span> }
+              <span class="faint">{{ e.occurred_at | esDate: 'time' }}</span>
+            </div>
+          </li>
+        }
+      </ol>
+      <app-pagination [page]="page()" [hasNext]="hasNext()" [disabled]="eventsLoading()" (pageChange)="go($event)" />
+    }
+  </section>
+</div>

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Co-Piloto de Duelo — Frontend"
+description = "Frontend Angular en español para el backend FastAPI existente de acompañamiento responsable durante el duelo."
+version = "1.0.0"
+id = "artifacts/grief-frontend"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20212
+
+[services.development]
+run = "pnpm --filter @workspace/grief-frontend run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/grief-frontend", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/grief-frontend/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20212"
+BASE_PATH = "/"

@@ -1,0 +1,6 @@
+.back { margin: 0 0 18px -12px; }
+.lead { font-size: 1.08rem; }
+.h { margin-bottom: 14px; }
+.steps { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.steps li { display: flex; gap: 14px; align-items: flex-start; }
+.n { width: 28px; height: 28px; border-radius: 50%; background: var(--sage-wash); color: #3f5d52; display: grid; place-items: center; font-weight: 700; font-size: .85rem; flex-shrink: 0; }

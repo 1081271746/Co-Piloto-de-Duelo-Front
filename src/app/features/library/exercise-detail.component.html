@@ -1,0 +1,49 @@
+<div class="page page-narrow">
+  <a routerLink="/library" class="btn btn-ghost back"><app-icon name="left" [size]="16" /> Biblioteca</a>
+
+  @if (loading()) {
+    <app-loading [rows]="2" label="Cargando el ejercicio" />
+  } @else if (error()) {
+    <app-error [message]="error()" (retry)="load()" />
+  } @else if (exercise(); as ex) {
+    <article class="stack-lg">
+      <header class="stack" style="gap: 10px">
+        <div class="row"><span class="chip chip-sage">{{ ex.category | category }}</span><span class="faint">Alrededor de {{ ex.duration_minutes }} minutos</span></div>
+        <h1>{{ ex.title }}</h1>
+        <p class="muted lead">{{ ex.description }}</p>
+      </header>
+
+      @if (guidance(); as g) {
+        <app-safety-guidance [guidance]="g" heading="Antes de cualquier ejercicio, tu seguridad" />
+      }
+
+      <section class="card">
+        <h2 class="h">Cómo hacerlo</h2>
+        <ol class="steps">
+          @for (step of ex.instructions; track $index) { <li><span class="n" aria-hidden="true">{{ $index + 1 }}</span><p>{{ step }}</p></li> }
+        </ol>
+        <p class="faint">Puedes detenerte en cualquier momento. No hay una manera correcta de terminarlo.</p>
+      </section>
+
+      <section class="card stack">
+        <h2 class="h">Registrar que lo hiciste</h2>
+        @if (saved()) {
+          <div class="alert alert-success" role="status"><app-icon name="check" /><p>Lo anotamos en tu historial. <a routerLink="/library/history">Ver lo que he practicado</a></p></div>
+        }
+        @if (guidance()) {
+          <p class="muted">El registro de ejercicios está en pausa mientras la prioridad sea tu seguridad.</p>
+        } @else {
+          <form class="stack" [formGroup]="form" (ngSubmit)="complete()" novalidate>
+            <div class="field">
+              <label for="notes">Notas (opcional)</label>
+              <textarea id="notes" class="textarea" formControlName="notes" maxlength="2000" placeholder="Algo que notaste mientras lo hacías" aria-describedby="notes-hint"></textarea>
+              <span id="notes-hint" class="hint">{{ form.controls.notes.value.length }} / 2000</span>
+            </div>
+            @if (saveError()) { <div class="alert alert-error" role="alert"><app-icon name="alert" /><p>{{ saveError() }}</p></div> }
+            <div><button type="submit" class="btn btn-primary" [disabled]="blocked() || saving()">{{ saving() ? 'Guardando' : 'Marcar como realizado' }}</button></div>
+          </form>
+        }
+      </section>
+    </article>
+  }
+</div>

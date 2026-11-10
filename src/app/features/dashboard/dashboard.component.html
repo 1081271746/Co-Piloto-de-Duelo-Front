@@ -1,0 +1,90 @@
+<div class="page">
+  <section class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">{{ today }}</p>
+      <h1>{{ greeting }}{{ firstName() ? ', ' + firstName() : '' }}.</h1>
+      <p class="muted lead">Este es tu espacio. Puedes escribir, releer o simplemente estar aquí un momento.</p>
+      <div class="row">
+        <a routerLink="/journal/new" class="btn btn-primary"><app-icon name="pen" [size]="17" /> Escribir ahora</a>
+        <a routerLink="/journal" class="btn btn-secondary">Releer mi diario</a>
+      </div>
+    </div>
+    <svg class="hero-art" viewBox="0 0 220 160" aria-hidden="true">
+      <rect x="20" y="16" width="150" height="128" rx="10" fill="var(--card)" stroke="var(--line)" />
+      <rect x="20" y="16" width="14" height="128" rx="4" fill="var(--heather)" opacity=".55" />
+      <path d="M50 48h96M50 66h88M50 84h96M50 102h60" stroke="var(--dusk)" stroke-width="1.6" stroke-linecap="round" opacity=".35" />
+      <circle cx="176" cy="36" r="20" fill="var(--ember-wash)" stroke="var(--ember)" stroke-width="1.2" />
+      <path d="M150 130c12-6 24 4 36-2s20-4 28 0" fill="none" stroke="var(--sage)" stroke-width="1.6" stroke-linecap="round" opacity=".7" />
+    </svg>
+  </section>
+
+  @if (recs()?.safety_guidance; as g) {
+    <section class="block"><app-recommendations [data]="recs()!" /></section>
+  }
+
+  <div class="grid-2 block">
+    <section class="stack">
+      <div class="section-title"><h2>Últimas entradas</h2><a routerLink="/journal">Ver todas</a></div>
+      @if (entriesError()) {
+        <app-error [message]="entriesError()" (retry)="loadEntries()" />
+      } @else if (entries() === null) {
+        <app-loading [rows]="2" label="Cargando entradas" />
+      } @else if (!entries()!.length) {
+        <div class="card card-quiet stack" style="gap: 8px">
+          <h3>Aún no has escrito nada</h3>
+          <p class="muted">Una línea basta para empezar. Este es tu espacio personal.</p>
+          <div><a routerLink="/journal/new" class="btn btn-secondary btn-sm">Escribir la primera</a></div>
+        </div>
+      } @else {
+        <ul class="entries">
+          @for (e of entries(); track e.id) {
+            <li>
+              <a class="card card-link entry" [routerLink]="['/journal', e.id]">
+                <div class="row-between"><span class="faint">{{ e.recorded_at | esDate: 'long' }}</span><span class="chip chip-heather">{{ e.emotional_state }}</span></div>
+                <p class="clamp-3 ex">{{ e.content }}</p>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <aside class="stack">
+      <section class="card stack">
+        <h2 class="h">Últimos 30 días</h2>
+        @if (summaryError()) {
+          <app-error [message]="summaryError()" (retry)="loadSummary()" />
+        } @else if (summary(); as s) {
+          <dl class="mini">
+            <div><dt>Entradas</dt><dd>{{ s.counts.entries }}</dd></div>
+            <div><dt>Lecturas</dt><dd>{{ s.counts.analyses }}</dd></div>
+            <div><dt>Ejercicios</dt><dd>{{ s.counts.completed_exercises }}</dd></div>
+          </dl>
+          <p class="faint">Solo cuenta lo que hiciste; no evalúa cómo vas.</p>
+          <a routerLink="/tracking" class="faint">Ver seguimiento</a>
+        } @else {
+          <app-loading [rows]="1" label="Cargando resumen" />
+        }
+      </section>
+
+      @if (!recs()?.safety_guidance) {
+        <section class="card stack">
+          <h2 class="h">Para cuando quieras</h2>
+          @if (recsError()) {
+            <app-error [message]="recsError()" (retry)="loadRecs()" />
+          } @else if (recs(); as r) {
+            <app-recommendations [data]="r" />
+            <a routerLink="/library" class="faint">Explorar la biblioteca</a>
+          } @else {
+            <app-loading [rows]="1" label="Cargando sugerencias" />
+          }
+        </section>
+      }
+
+      <a routerLink="/support" class="card card-link help">
+        <app-icon name="shield" [size]="20" />
+        <span><strong>Si lo necesitas, hay ayuda</strong><span class="faint"> · contactos de apoyo para tu país</span></span>
+      </a>
+    </aside>
+  </div>
+</div>

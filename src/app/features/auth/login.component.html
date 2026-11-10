@@ -1,0 +1,39 @@
+<app-auth-frame>
+  <div class="stack-lg">
+    <div class="stack" style="gap: 6px">
+      <p class="eyebrow">Bienvenida de vuelta</p>
+      <h1>Abre tu cuaderno</h1>
+      <p class="muted">Un espacio privado para escribir y reflexionar a tu ritmo.</p>
+    </div>
+
+    @if (notice(); as n) {
+      <div class="alert" [class.alert-success]="n.tone === 'success'" [class.alert-info]="n.tone === 'info'" [class.alert-warn]="n.tone === 'warn'" role="status">
+        <app-icon [name]="n.tone === 'warn' ? 'alert' : n.tone === 'success' ? 'check' : 'info'" />
+        <p>{{ n.text }}</p>
+      </div>
+    }
+    @if (storageWarning) {
+      <div class="alert alert-warn" role="status"><app-icon name="alert" /><p>Este navegador no permite guardar la sesión; tendrás que iniciar sesión al recargar.</p></div>
+    }
+
+    <form class="stack" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input id="email" class="input" type="email" autocomplete="email" formControlName="email" [class.invalid]="invalid('email')" [attr.aria-invalid]="invalid('email')" aria-describedby="email-err" />
+        @if (invalid('email')) { <span id="email-err" class="field-error">Escribe un correo válido.</span> }
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input id="password" class="input" type="password" autocomplete="current-password" formControlName="password" [class.invalid]="invalid('password')" [attr.aria-invalid]="invalid('password')" aria-describedby="pw-err" />
+        @if (invalid('password')) { <span id="pw-err" class="field-error">Escribe tu contraseña.</span> }
+      </div>
+      @if (error()) {
+        <div class="alert alert-error" role="alert"><app-icon name="alert" /><p>{{ error() }}</p></div>
+      }
+      <button type="submit" class="btn btn-primary full" [disabled]="submitting()">{{ submitting() ? 'Entrando' : 'Entrar' }}</button>
+    </form>
+
+    <p class="muted switch">¿Aún no tienes cuenta? <a routerLink="/register">Crear una cuenta</a></p>
+    <p class="disclaimer">Co-Piloto de Duelo acompaña la escritura y la reflexión. No sustituye la atención psicológica ni los servicios de emergencia.</p>
+  </div>
+</app-auth-frame>

@@ -1,0 +1,65 @@
+<div class="page">
+  <app-page-header eyebrow="Acompañamiento" title="Ayuda cuando la necesites"
+    lead="Contactos de apoyo para tu país y los avisos que se generaron a partir de tus entradas. Esta aplicación no tiene chat ni personas atendiendo en línea." />
+
+  <div class="stack-lg">
+    @if (guidanceError()) {
+      <app-error [message]="guidanceError()" (retry)="loadGuidance()" />
+    } @else if (guidance(); as g) {
+      <app-safety-guidance [guidance]="g" heading="Si te sientes en peligro, busca ayuda ahora" />
+    } @else {
+      <app-loading [rows]="1" label="Cargando contactos de ayuda" />
+    }
+
+    <section class="stack">
+      <div class="section-title"><h2>Avisos de seguridad</h2></div>
+      <p class="muted">Marcar un aviso como leído solo indica que lo viste. No significa que la situación esté resuelta.</p>
+      @if (ackError()) { <div class="alert alert-error" role="alert"><app-icon name="alert" /><p>{{ ackError() }}</p></div> }
+      @if (loading() && !alerts().length) {
+        <app-loading [rows]="2" label="Cargando avisos" />
+      } @else if (error()) {
+        <app-error [message]="error()" (retry)="load()" />
+      } @else if (!alerts().length) {
+        <div class="card card-quiet quiet"><p class="muted">No hay avisos registrados. Los contactos de arriba siguen disponibles siempre que los necesites.</p></div>
+      } @else {
+        <ul class="alerts">
+          @for (a of alerts(); track a.id) {
+            <li class="card alert-card" [class.seen]="a.acknowledged_at">
+              <details>
+                <summary class="row-between">
+                  <span class="stack" style="gap: 4px">
+                    <span class="row"><span class="chip chip-risk">{{ a.risk_level | risk }}</span><span class="faint">{{ source(a.source) }}</span></span>
+                    <strong>{{ a.created_at | esDate: 'time' }}</strong>
+                  </span>
+                  @if (a.acknowledged_at) { <span class="faint">Leído el {{ a.acknowledged_at | esDate: 'long' }}</span> }
+                  @else { <span class="chip chip-ember">Sin leer</span> }
+                </summary>
+                <div class="stack body">
+                  <app-safety-guidance [guidance]="a.guidance" />
+                  <div class="row">
+                    @if (a.entry_id) { <a class="btn btn-secondary btn-sm" [routerLink]="['/journal', a.entry_id]">Ver la entrada</a> }
+                    @if (!a.acknowledged_at) {
+                      <button type="button" class="btn btn-primary btn-sm" (click)="acknowledge(a)" [disabled]="ackBusy() === a.id">
+                        {{ ackBusy() === a.id ? 'Guardando' : 'Marcar como leído' }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              </details>
+            </li>
+          }
+        </ul>
+        <app-pagination [page]="page()" [hasNext]="hasNext()" [disabled]="loading()" (pageChange)="go($event)" />
+      }
+    </section>
+
+    <section class="card stack rt">
+      <h2 class="h">Actualización en vivo</h2>
+      <app-realtime-status [detailed]="true" />
+      @if (realtime.state() === 'unavailable' || realtime.state() === 'disconnected') {
+        <div><button type="button" class="btn btn-secondary btn-sm" (click)="realtime.retry()"><app-icon name="refresh" [size]="15" /> Reintentar conexión</button></div>
+      }
+      <p class="faint">Solo sincroniza cambios entre tus sesiones abiertas. No es un canal de comunicación con otras personas.</p>
+    </section>
+  </div>
+</div>

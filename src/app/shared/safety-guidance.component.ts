@@ -4,17 +4,24 @@ import type { SafetyGuidance } from '../core/models/safety.models';
 import { IconComponent } from './icon.component';
 import { isSafeUrl, RiskPipe } from './format';
 
+const RESOURCE_LABELS: Record<string, string> = {
+  emergency_number: 'Número de emergencias',
+  support_name: 'Servicio de apoyo',
+  support_url: 'Directorio de ayuda',
+};
+let nextGuidanceId = 0;
+
 @Component({
   selector: 'app-safety-guidance',
   imports: [IconComponent, RiskPipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="guide" role="alert" aria-labelledby="guide-title">
+    <section class="guide" role="alert" [attr.aria-labelledby]="titleId">
       <div class="top">
         <span class="mark"><app-icon name="heart" [size]="22" /></span>
         <div class="stack" style="gap: 4px">
           <p class="eyebrow">Tu seguridad primero · {{ guidance().risk_level | risk }}</p>
-          <h2 id="guide-title">{{ heading() }}</h2>
+          <h2 [id]="titleId">{{ heading() }}</h2>
         </div>
       </div>
       <p class="message">{{ guidance().message }}</p>
@@ -62,8 +69,11 @@ import { isSafeUrl, RiskPipe } from './format';
   `],
 })
 export class SafetyGuidanceComponent {
+  readonly titleId = `safety-guidance-${++nextGuidanceId}`;
   readonly guidance = input.required<SafetyGuidance>();
   readonly heading = input('No tienes que atravesar esto a solas');
   protected readonly resources = computed(() =>
-    Object.entries(this.guidance().resources ?? {}).map(([name, value]) => ({ name, value, link: isSafeUrl(value) })));
+    Object.entries(this.guidance().resources ?? {}).map(([name, value]) => ({
+      name: RESOURCE_LABELS[name] ?? name.replaceAll('_', ' '), value, link: isSafeUrl(value),
+    })));
 }

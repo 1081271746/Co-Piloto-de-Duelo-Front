@@ -1,0 +1,5 @@
+.states { border: none; padding: 0; margin: 0; gap: 10px; }
+.chips { gap: 8px; }
+.over { color: var(--risk); }
+.when { background: var(--card); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); padding: 14px 16px; }
+.bar { position: sticky; bottom: 0; padding: 14px 0; background: linear-gradient(transparent, var(--paper) 35%); }

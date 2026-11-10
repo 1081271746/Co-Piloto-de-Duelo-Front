@@ -1,0 +1,70 @@
+<div class="page page-narrow">
+  <app-page-header [eyebrow]="isEdit ? 'Editar entrada' : 'Nueva entrada'" [title]="isEdit ? 'Vuelve a tus palabras' : '¿Cómo llegas hoy?'"
+    [lead]="isEdit ? 'Los cambios se guardan solo cuando confirmas.' : 'Escribe lo que necesites. No hay forma correcta de hacerlo.'">
+    <a [routerLink]="isEdit ? ['/journal', entryId] : ['/journal']" class="btn btn-ghost"><app-icon name="left" [size]="16" /> Volver</a>
+  </app-page-header>
+
+  @if (savedAlert(); as alert) {
+    <div class="stack-lg">
+      <div class="alert alert-success" role="status"><app-icon name="check" /><p>Tu entrada quedó guardada.</p></div>
+      <app-safety-guidance [guidance]="alert.guidance" heading="Lo que escribiste importa. Busquemos apoyo ahora" />
+      <div class="row">
+        <a class="btn btn-primary" routerLink="/support">Ver opciones de acompañamiento</a>
+        <a class="btn btn-secondary" [routerLink]="['/journal', savedId()]">Ver la entrada</a>
+      </div>
+    </div>
+  } @else if (loading()) {
+    <app-loading [rows]="2" label="Cargando la entrada" />
+  } @else if (loadError()) {
+    <app-error [message]="loadError()" (retry)="load()" />
+  } @else if (ready()) {
+    <form class="stack-lg" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <fieldset class="field states">
+        <legend class="label">¿Qué nombre le das a lo que sientes?</legend>
+        <p class="hint">Elige una palabra o escribe la tuya. Puede ser más de una cosa a la vez.</p>
+        <div class="row chips">
+          @for (s of states; track s) {
+            <button type="button" class="chip chip-button" [attr.aria-pressed]="form.controls.emotional_state.value === s" (click)="pick(s)">{{ s }}</button>
+          }
+        </div>
+        <label for="state" class="sr-only">Estado emocional con tus palabras</label>
+        <input id="state" class="input" formControlName="emotional_state" maxlength="100" placeholder="O descríbelo con tus palabras"
+          [class.invalid]="invalid('emotional_state')" [attr.aria-invalid]="invalid('emotional_state')" aria-describedby="state-err" />
+        @if (invalid('emotional_state')) { <span id="state-err" class="field-error">Indica cómo te sientes (hasta 100 caracteres).</span> }
+      </fieldset>
+
+      <div class="field">
+        <div class="row-between">
+          <label for="content">Tu entrada</label>
+          <span class="faint mono" [class.over]="length() > maxContent" aria-live="polite">{{ length() }} / {{ maxContent }}</span>
+        </div>
+        <textarea id="content" class="textarea textarea-journal" formControlName="content"
+          placeholder="Hoy pensé en…" [class.invalid]="invalid('content')" [attr.aria-invalid]="invalid('content')" aria-describedby="content-err"></textarea>
+        @if (invalid('content')) {
+          <span id="content-err" class="field-error">
+            {{ form.controls.content.hasError('maxlength') ? 'La entrada supera los 10000 caracteres.' : 'Escribe al menos unas palabras.' }}
+          </span>
+        }
+      </div>
+
+      <details class="when" [open]="isEdit">
+        <summary class="label">Fecha y hora (opcional)</summary>
+        <div class="field" style="margin-top: 10px">
+          <label for="when" class="sr-only">Fecha y hora de lo que describes</label>
+          <input id="when" class="input" type="datetime-local" formControlName="recorded_at" />
+          <span class="hint">Si lo dejas vacío, se usa el momento en que guardas.</span>
+        </div>
+      </details>
+
+      @if (saveError()) {
+        <div class="alert alert-error" role="alert"><app-icon name="alert" /><p>{{ saveError() }} Tu texto sigue aquí; no se ha perdido.</p></div>
+      }
+
+      <div class="row bar">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Guardando' : (isEdit ? 'Guardar cambios' : 'Guardar entrada') }}</button>
+        @if (form.dirty) { <span class="faint">Cambios sin guardar</span> }
+      </div>
+      <p class="disclaimer">Tu texto no se guarda en este navegador. Solo se conserva cuando el servidor confirma el guardado.</p>
+    </form>
+  }
+</div>
